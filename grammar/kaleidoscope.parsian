@@ -1,0 +1,19 @@
+(*
+Grammar of Kaleidoscope langage
+Author: Thomas Bollmeier <developer@tbollmeier.org>
+Version: 0.1.0
+*)
+
+comment "#" "\n";
+
+-- Tokens
+
+token NUMBER /\d+(\.\d+)?/;
+token IDENT /[a-zA-Z][a-zA-Z0-9]*/;
+token UNKNOWN /.+/;
+
+-- Rules
+
+@root
+kaleidoscope -> NUMBER | ID;
+

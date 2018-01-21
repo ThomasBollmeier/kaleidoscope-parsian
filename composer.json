@@ -1,0 +1,16 @@
+{
+    "name": "tbollmeier/kaleidoscope",
+    "description": "An implementation of the Kaleidoscope language from the LLVM tutorial",
+    "type": "library",
+    "require": {
+        "tbollmeier/parsian": "v1.7.2"
+    },
+    "license": "Apache 2.0",
+    "authors": [
+        {
+            "name": "Thomas Bollmeier",
+            "email": "developer@tbollmeier.org"
+        }
+    ],
+    "minimum-stability": "alpha"
+}
