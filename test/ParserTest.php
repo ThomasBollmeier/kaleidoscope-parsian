@@ -1,18 +1,17 @@
 <?php
 
 require("../vendor/autoload.php");
-require("../src/KaleidoscopeBaseParser.php");
 
-use tbollmeier\kaleidoscope\KaleidoscopeBaseParser;
+use tbollmeier\kaleidoscope\KaleidoscopeParser;
 use tbollmeier\parsian\input\StringCharInput;
 
 $code=<<<CODE
 
-answer = 42
+answer=42.123;
 
 CODE;
 
-$parser = new KaleidoscopeBaseParser();
+$parser = new KaleidoscopeParser();
 $lexer = $parser->getLexer();
 $tokenIn = $lexer->createTokenInput(new StringCharInput($code));
 

@@ -2,6 +2,11 @@
     "name": "tbollmeier/kaleidoscope",
     "description": "An implementation of the Kaleidoscope language from the LLVM tutorial",
     "type": "library",
+    "autoload": {
+        "psr-4": {
+          "tbollmeier\\kaleidoscope\\": "src/"
+        }
+    },
     "require": {
         "tbollmeier/parsian": "v1.7.2"
     },
