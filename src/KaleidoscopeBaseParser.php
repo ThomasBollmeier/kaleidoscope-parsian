@@ -7,6 +7,7 @@
 namespace tbollmeier\kaleidoscope;
 
 use tbollmeier\parsian as parsian;
+use tbollmeier\parsian\output\Ast;
 
 
 class KaleidoscopeBaseParser extends parsian\Parser
@@ -27,10 +28,15 @@ class KaleidoscopeBaseParser extends parsian\Parser
         $lexer->addCommentType("#", "\n");
 
 
+        $lexer->addSymbol(";", "SEMICOLON");
+        $lexer->addSymbol("*", "MULT");
+        $lexer->addSymbol("+", "PLUS");
+        $lexer->addSymbol("(", "LPAR");
+        $lexer->addSymbol(")", "RPAR");
 
         $lexer->addTerminal("/\d+(\.\d+)?/", "NUMBER");
         $lexer->addTerminal("/[a-zA-Z][a-zA-Z0-9]*/", "IDENT");
-        $lexer->addTerminal("/.+/", "UNKNOWN");
+        $lexer->addTerminal("/./", "UNKNOWN");
 
 
     }
@@ -41,8 +47,83 @@ class KaleidoscopeBaseParser extends parsian\Parser
         $grammar = $this->getGrammar();
 
         $grammar->rule("kaleidoscope",
-            $this->alt_1(),
+            $grammar->many($grammar->ruleRef("stmt")),
             true);
+        $grammar->rule("stmt",
+            $this->seq_1(),
+            false);
+
+        $grammar->setCustomRuleAst("stmt", function (Ast $ast) {
+            $res = new Ast("statement", "");
+            foreach ($ast->getChildrenById("st") as $local_1) {
+                $local_1->clearId();
+                $res->addChild($local_1);
+            }
+            return $res;
+        });
+
+        $grammar->rule("expr",
+            $this->alt_1(),
+            false);
+
+        $grammar->setCustomRuleAst("expr", function (Ast $ast) {
+            $child = $ast->getChildren()[0];
+            $child->clearId();
+            return $child;
+        });
+
+        $grammar->rule("primary_expr",
+            $this->alt_2(),
+            false);
+
+        $grammar->setCustomRuleAst("primary_expr", function (Ast $ast) {
+            $child = $ast->getChildren()[0];
+            $child->clearId();
+            return $child;
+        });
+
+        $grammar->rule("number_expr",
+            $grammar->term("NUMBER"),
+            false);
+
+        $grammar->setCustomRuleAst("number_expr", function (Ast $ast) {
+            $res = new Ast("number", $ast->getChildren()[0]->getText());
+            return $res;
+        });
+
+        $grammar->rule("id_expr",
+            $grammar->term("IDENT"),
+            false);
+
+        $grammar->setCustomRuleAst("id_expr", function (Ast $ast) {
+            $res = new Ast("identifier", $ast->getChildren()[0]->getText());
+            return $res;
+        });
+
+        $grammar->rule("paren_expr",
+            $this->seq_2(),
+            false);
+
+        $grammar->setCustomRuleAst("paren_expr", function (Ast $ast) {
+            $res = new Ast("group", "");
+            $local_1 = $ast->getChildrenById("e")[0];
+            $local_1->clearId();
+            $res->addChild($local_1);
+            return $res;
+        });
+
+        $grammar->rule("mult_expr",
+            $this->seq_3(),
+            false);
+        $grammar->rule("operator",
+            $this->alt_3(),
+            false);
+
+        $grammar->setCustomRuleAst("operator", function (Ast $ast) {
+            $res = new Ast("operator", $ast->getChildren()[0]->getText());
+            return $res;
+        });
+
 
     }
 
@@ -51,10 +132,66 @@ class KaleidoscopeBaseParser extends parsian\Parser
         $grammar = $this->getGrammar();
 
         return $grammar->alt()
-            ->add($grammar->term("NUMBER"))
-            ->add($grammar->term("ID"));
+            ->add($grammar->ruleRef("mult_expr"))
+            ->add($grammar->ruleRef("primary_expr"));
     }
 
+    private function alt_2()
+    {
+        $grammar = $this->getGrammar();
+
+        return $grammar->alt()
+            ->add($grammar->ruleRef("number_expr"))
+            ->add($grammar->ruleRef("id_expr"))
+            ->add($grammar->ruleRef("paren_expr"));
+    }
+
+    private function alt_3()
+    {
+        $grammar = $this->getGrammar();
+
+        return $grammar->alt()
+            ->add($grammar->term("PLUS"))
+            ->add($grammar->term("MULT"));
+    }
+
+
+    private function seq_1()
+    {
+        $grammar = $this->getGrammar();
+
+        return $grammar->seq()
+            ->add($grammar->ruleRef("expr", "st"))
+            ->add($grammar->term("SEMICOLON"));
+    }
+
+    private function seq_2()
+    {
+        $grammar = $this->getGrammar();
+
+        return $grammar->seq()
+            ->add($grammar->term("LPAR"))
+            ->add($grammar->ruleRef("expr", "e"))
+            ->add($grammar->term("RPAR"));
+    }
+
+    private function seq_3()
+    {
+        $grammar = $this->getGrammar();
+
+        return $grammar->seq()
+            ->add($grammar->ruleRef("primary_expr"))
+            ->add($grammar->oneOrMore($this->seq_4()));
+    }
+
+    private function seq_4()
+    {
+        $grammar = $this->getGrammar();
+
+        return $grammar->seq()
+            ->add($grammar->ruleRef("operator"))
+            ->add($grammar->ruleRef("primary_expr"));
+    }
 
 
 }

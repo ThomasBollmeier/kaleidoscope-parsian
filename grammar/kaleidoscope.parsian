@@ -1,19 +1,56 @@
 (*
 Grammar of Kaleidoscope langage
 Author: Thomas Bollmeier <developer@tbollmeier.org>
-Version: 0.1.0
+Version: 0.2.0
 *)
 
 comment "#" "\n";
 
--- Tokens
+-- Terminals
+
+symbol SEMICOLON ';';
+symbol MULT '*';
+symbol PLUS '+';
+symbol LPAR '(';
+symbol RPAR ')';
 
 token NUMBER /\d+(\.\d+)?/;
 token IDENT /[a-zA-Z][a-zA-Z0-9]*/;
-token UNKNOWN /.+/;
+token UNKNOWN /./;
 
 -- Rules
 
 @root
-kaleidoscope -> NUMBER | ID;
+kaleidoscope -> stmt*;
+
+stmt -> st#expr SEMICOLON => {
+    :name "statement"
+    :children #st
+};
+
+expr -> mult_expr | primary_expr  => child;
+
+primary_expr -> number_expr | id_expr | paren_expr => child;
+
+number_expr -> NUMBER => {
+    :name "number"
+    :text child.text
+};
+
+id_expr -> IDENT => {
+    :name "identifier"
+    :text child.text
+};
+
+paren_expr -> LPAR e#expr RPAR => {
+    :name "group"
+    :children [#e]
+};
+
+mult_expr -> primary_expr (operator primary_expr)+;
+
+operator -> PLUS | MULT => {
+    :name "operator"
+    :text child.text
+};
 
