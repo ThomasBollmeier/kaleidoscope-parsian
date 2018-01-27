@@ -3,17 +3,11 @@
 require("../vendor/autoload.php");
 
 use tbollmeier\kaleidoscope\KaleidoscopeParser;
-use tbollmeier\parsian\input\StringCharInput;
-
-$code=<<<CODE
-answer;
-42;
-(23 + b);
-CODE;
+use tbollmeier\parsian\input\FileCharInput;
 
 $parser = new KaleidoscopeParser();
 $lexer = $parser->getLexer();
-$tokenIn = $lexer->createTokenInput(new StringCharInput($code));
+$tokenIn = $lexer->createTokenInput(new FileCharInput("code.txt"));
 
 $tokenIn->open();
 while ($tokenIn->hasMoreTokens()) {

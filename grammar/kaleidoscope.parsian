@@ -21,25 +21,20 @@ token UNKNOWN /./;
 -- Rules
 
 @root
-kaleidoscope -> stmt*;
-
-stmt -> st#expr SEMICOLON => {
-    :name "statement"
-    :children #st
+kaleidoscope -> ((stmt#definition | stmt#external | stmt#expr) SEMICOLON?)* =>
+{
+    :name "kaleidoscope"
+    :children #stmt
 };
 
 expr -> mult_expr | primary_expr  => child;
 
-primary_expr -> number_expr | id_expr | paren_expr => child;
+primary_expr -> NUMBER | id_expr | paren_expr => child;
 
-number_expr -> NUMBER => {
-    :name "number"
-    :text child.text
-};
-
-id_expr -> IDENT => {
+id_expr -> IDENT (LPAR arg#expr* RPAR)? => {
     :name "identifier"
     :text child.text
+    :children #arg
 };
 
 paren_expr -> LPAR e#expr RPAR => {
@@ -54,3 +49,16 @@ operator -> PLUS | MULT => {
     :text child.text
 };
 
+definition -> 'def' p#prototype e#expr =>
+{
+    :name "definition"
+    :children [#p #e]
+};
+
+prototype -> func#IDENT LPAR arg#IDENT* RPAR;
+
+external -> 'extern' p#prototype =>
+{
+    :name "external"
+    :children #p
+};

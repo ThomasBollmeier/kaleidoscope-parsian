@@ -1,0 +1,4 @@
+42
+answer
+extern isOdd(n);
+def add(x y) x + y

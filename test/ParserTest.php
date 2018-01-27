@@ -4,14 +4,10 @@ require("../vendor/autoload.php");
 
 use tbollmeier\kaleidoscope\KaleidoscopeParser;
 
-$code=<<<CODE
-answer;
-42 * (23 + answer);
-CODE;
 
 $parser = new KaleidoscopeParser();
 
-$ast = $parser->parseString($code);
+$ast = $parser->parseFile("code.txt");
 if ($ast) {
     echo $ast->toXml() . "\n";
 } else {
